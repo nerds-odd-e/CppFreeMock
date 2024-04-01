@@ -10,7 +10,7 @@
 
 #include "impl.h"
 
-#define MOCKER_INTERNAL(function, identity) \
-    ::CppFreeMock::MockerCreator::GetMocker<::CppFreeMock::TypeForUniqMocker<identity>>(function, #function)
+#define MOCKER_INTERNAL(function) \
+    ::CppFreeMock::MockerCreator::GetMocker<::CppFreeMock::TypeForUniqMocker<42>>(function, #function)
 
 #endif // CPP_FREE_MOCK_INTERNAL_MACRO_H_

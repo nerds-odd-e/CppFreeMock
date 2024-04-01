@@ -17,7 +17,7 @@
 //  2, static member function;
 //  3, member function mocker that can check this pointer.
 #define MOCKER(function) \
-    MOCKER_INTERNAL(function, __COUNTER__)
+    MOCKER_INTERNAL(function)
 
 #define CLEAR_MOCKER ::CppFreeMock::MockerCreator::RestoreAllMockerFunctionToReal
 
