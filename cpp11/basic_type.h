@@ -24,9 +24,9 @@ class MockerEntryPoint { };
 
 template < typename T >
 struct SimpleSingleton {
-    static T& getInstance() {
+    static T* getInstance() {
         static T value;
-        return value;
+        return &value;
     }
 };
 

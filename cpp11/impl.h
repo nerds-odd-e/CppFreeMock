@@ -42,7 +42,7 @@ namespace CppFreeMock {
         typedef I IntegrateType(R(P));
         friend class Mocker<IntegrateType>;
         static R EntryPoint(P p) {
-            return SimpleSingleton<Mocker<IntegrateType>*>::getInstance()->CppFreeMockStubFunction(p);
+            return SimpleSingleton< Mocker<IntegrateType> >::getInstance()->CppFreeMockStubFunction(p);
         }
     };
 
@@ -52,7 +52,7 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
     typedef I IntegrateType(R(C::*)(const void*, P) constness); \
     friend class Mocker<IntegrateType>; \
     R EntryPoint(P p) { \
-        return SimpleSingleton<Mocker<IntegrateType>*>::getInstance()->CppFreeMockStubFunction(this, p); \
+        return SimpleSingleton< Mocker<IntegrateType> >::getInstance()->CppFreeMockStubFunction(this, p); \
     } \
 }
 
@@ -64,6 +64,7 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 // This class is hack how gmock implement it.
     template < typename R, typename P >
     struct MockerBase<R(P)> {
+        MockerBase() {}
         MockerBase(const std::string& _functionName): functionName(_functionName) {}
         virtual ~MockerBase() {}
 
@@ -90,10 +91,12 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
     struct Mocker<I(R(P))> : MockerBase<R(P)> {
         typedef I IntegrateType(R(P));
         typedef R FunctionType(P);
+        Mocker() {};
         Mocker(FunctionType function, const std::string& functionName):
                 MockerBase<FunctionType>(functionName),
                 originFunction(function) {
-//            SimpleSingleton<I(R(P))>::getInstance() = this;
+            Mocker<I(R(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
+            instance_mocker = this;
             RuntimePatcher::GraftFunction(originFunction,
                                           MockerEntryPoint<IntegrateType>::EntryPoint,
                                           MockerBase<FunctionType>::binaryBackup);
@@ -106,6 +109,9 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
         void RestoreToReal() {
             RuntimePatcher::RevertGraft(originFunction, MockerBase<FunctionType>::binaryBackup);
 //            SimpleSingleton<I(R(P))>::getInstance() = NULL;
+            Mocker<I(R(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
+            delete instance_mocker;
+            instance_mocker = NULL;
         }
 
         FunctionType* originFunction;
@@ -130,7 +136,9 @@ struct Mocker<I(R(C::*)(const void*, P) constness)> : MockerBase<R(const void*, 
     } \
     virtual void RestoreToReal() { \
         RuntimePatcher::RevertGraft(originFunction, MockerBase<StubFunctionType>::binaryBackup); \
-        SimpleSingleton<I(R(C::*))>::getInstance() = NULL; \
+        Mocker<I(R(C::*))>* instance_mocker = SimpleSingleton< Mocker<I(R(C::*))> >::getInstance(); \
+        delete instance_mocker; \
+        instance_mocker = NULL; \
     } \
     FunctionType originFunction; \
 }
@@ -146,18 +154,18 @@ struct Mocker<I(R(C::*)(const void*, P) constness)> : MockerBase<R(const void*, 
         friend class MockerCreator;
         typedef std::map<const void*, T*> HashMap;
 
-    static HashMap& getInstance() {
+    static HashMap* getInstance() {
         return SimpleSingleton<HashMap>::getInstance();
     }
 
     static void RestoreCachedMockFunctionToReal() {
-        HashMap& instance_map = getInstance();
-        for (typename HashMap::iterator it = instance_map.begin(); it != instance_map.end(); ++it) {
+        HashMap* instance_map = getInstance();
+        for (typename HashMap::iterator it = instance_map->begin(); it != instance_map->end(); ++it) {
             T* mocker = it->second;
             mocker->RestoreToReal();
             delete mocker;
         }
-        getInstance().clear();
+        getInstance()->clear();
     }
 };
 
@@ -191,13 +199,13 @@ private:
         typedef MockerCache<M> MockerCacheType;
         typedef std::map<const void*, M*> HashMap;
         const void* address = (const void*)(function);
-        typename HashMap::iterator got = MockerCacheType::getInstance().find(address);
-        if (got != MockerCacheType::getInstance().end()) {
+        typename HashMap::iterator got = MockerCacheType::getInstance()->find(address);
+        if (got != MockerCacheType::getInstance()->end()) {
             return got->second;
         } else {
-            SimpleSingleton<RestoreFunctions>::getInstance().push_back(MockerCacheType::RestoreCachedMockFunctionToReal);
+            SimpleSingleton<RestoreFunctions>::getInstance()->push_back(MockerCacheType::RestoreCachedMockFunctionToReal);
 //            MockerCacheType::getInstance().insert({{address, CreateMocker<I>(function, functionName)}});
-            MockerCacheType::getInstance()[address] = CreateMocker<I>(function, functionName);
+            (*MockerCacheType::getInstance())[address] = CreateMocker<I>(function, functionName);
             return DoGetMocker<I, M>(function, functionName);
         }
     }
@@ -224,12 +232,12 @@ public:
 //        for (auto& restorer : SimpleSingleton<RestoreFunctions>::getInstance()) {
 //            restorer();
 //        }
-        RestoreFunctions& instance_list = SimpleSingleton<RestoreFunctions>::getInstance();
-        for (RestoreFunctions::iterator it = instance_list.begin(); it != instance_list.end(); ++it) {
+        RestoreFunctions* instance_list = SimpleSingleton<RestoreFunctions>::getInstance();
+        for (RestoreFunctions::iterator it = instance_list->begin(); it != instance_list->end(); ++it) {
             void (*func)() = (void (*)())(*it);
             func();
         }
-        SimpleSingleton<RestoreFunctions>::getInstance().clear();
+        SimpleSingleton<RestoreFunctions>::getInstance()->clear();
     }
 };
 
