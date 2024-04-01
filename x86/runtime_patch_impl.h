@@ -9,7 +9,7 @@
 #define CPP_FREE_MOCK_X86_RUNTIME_PATCH_IMPL_H_
 
 #include <cstddef>
-#include <cstdint>
+#include <stdint.h>
 #include <vector>
 
 namespace CppFreeMock {
@@ -24,7 +24,7 @@ namespace RuntimePatcherImpl {
     }
 
     static bool IsDistanceOverflow(const std::size_t distance) {
-        return distance > INT32_MAX && distance < ((long long)INT32_MIN);
+        return distance > INT_MAX && distance < ((long long)INT_MIN);
     }
 
     static std::size_t CalculateDistance(const void* const address, const void* const destination) {

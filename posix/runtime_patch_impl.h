@@ -9,6 +9,7 @@
 #define CPP_FREE_MOCK_POSIX_RUNTIME_PATCH_IMPL_H_
 
 #include <cerrno>
+#include <iostream>
 
 #include <unistd.h>
 

@@ -8,8 +8,8 @@
 #ifndef CPP_FREE_MOCK_IMPL_H_
 #define CPP_FREE_MOCK_IMPL_H_
 
-#if __cplusplus >= 201103L
+//#if __cplusplus >= 201103L
 #include "cpp11/impl.h"
-#endif
+//#endif
 
 #endif // CPP_FREE_MOCK_IMPL_H_
