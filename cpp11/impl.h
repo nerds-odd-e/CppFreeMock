@@ -110,7 +110,6 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
             RuntimePatcher::RevertGraft(originFunction, MockerBase<FunctionType>::binaryBackup);
 //            SimpleSingleton<I(R(P))>::getInstance() = NULL;
             Mocker<I(R(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
-            delete instance_mocker;
             instance_mocker = NULL;
         }
 
@@ -137,7 +136,6 @@ struct Mocker<I(R(C::*)(const void*, P) constness)> : MockerBase<R(const void*, 
     virtual void RestoreToReal() { \
         RuntimePatcher::RevertGraft(originFunction, MockerBase<StubFunctionType>::binaryBackup); \
         Mocker<I(R(C::*))>* instance_mocker = SimpleSingleton< Mocker<I(R(C::*))> >::getInstance(); \
-        delete instance_mocker; \
         instance_mocker = NULL; \
     } \
     FunctionType originFunction; \
