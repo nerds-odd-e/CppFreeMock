@@ -30,7 +30,8 @@ namespace RuntimePatcherImpl {
             int err = errno;
             std::cerr << "Unprotect memory: " << address
                 << " meet errno: " << err
-                << " description: " << strerror(err) << std::endl;
+//                << " description: " << strerror(err) << std::endl;
+                << " description: " << std::endl;
         }
         return ret;
     }

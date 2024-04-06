@@ -6,12 +6,13 @@
 #include <string>
 
 std::string func(int unused) {
-    return "Non mocked.";
+    return "very long long ......................   ................... Non mocked.";
 }
 
 int main() {
-    MOCKER(func);
-    std::cout << "running..." << std::endl;
+    const CppFreeMock::MockerBase<std::string(int)>* mocker = MOCKER(func);
+//    CppFreeMock::MockerBase<std::string(int)>MOCK_FUNCTION(int);
+    std::cout << "func return: " << func(1) << std::endl;
     return 0;
 }
 

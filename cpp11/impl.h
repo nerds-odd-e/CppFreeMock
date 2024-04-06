@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 // I don't include gmock and gtest file here, because maybe you have you own include patch.
+#include <iostream>
 
 namespace CppFreeMock {
 
@@ -42,6 +43,7 @@ namespace CppFreeMock {
         typedef I IntegrateType(R(P));
         friend class Mocker<IntegrateType>;
         static R EntryPoint(P p) {
+            std::cout << "enter entry point 1" << std::endl;
             return SimpleSingleton< Mocker<IntegrateType> >::getInstance()->CppFreeMockStubFunction(p);
         }
     };
@@ -52,6 +54,7 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
     typedef I IntegrateType(R(C::*)(const void*, P) constness); \
     friend class Mocker<IntegrateType>; \
     R EntryPoint(P p) { \
+        std::cout << "enter entry point 2" << std::endl; \
         return SimpleSingleton< Mocker<IntegrateType> >::getInstance()->CppFreeMockStubFunction(this, p); \
     } \
 }
@@ -70,7 +73,7 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 
         // Use 'CppFreeMockStubFunction' as the function name for EXPECT_CALL.
         R CppFreeMockStubFunction(P p) {
-            return NULL;
+            return "it's working";
 //            gmocker.SetOwnerAndName(this, functionName.c_str());
 //            return gmocker.Invoke(p);
         }
