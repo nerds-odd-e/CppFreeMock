@@ -10,7 +10,7 @@ std::string func(int unused) {
 }
 
 int main() {
-    const CppFreeMock::MockerBase<std::string(int)>* mocker = MOCKER(func);
+    const CppFreeMock::MockerBase<std::string(*)(int)>* mocker = MOCKER(func);
 //    CppFreeMock::MockerBase<std::string(int)>MOCK_FUNCTION(int);
     std::cout << "func return: " << func(1) << std::endl;
     return 0;

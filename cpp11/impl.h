@@ -66,7 +66,7 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 
 // This class is hack how gmock implement it.
     template < typename R, typename P >
-    struct MockerBase<R(P)> {
+    struct MockerBase<R(*)(P)> {
         MockerBase() {}
         MockerBase(const std::string& _functionName): functionName(_functionName) {}
         virtual ~MockerBase() {}
@@ -91,18 +91,18 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
     };
 
     template < typename I, typename R, typename P>
-    struct Mocker<I(R(P))> : MockerBase<R(P)> {
-        typedef I IntegrateType(R(P));
+    struct Mocker<I(R(*)(P))> : MockerBase<R(*)(P)> {
+        typedef I IntegrateType(R(*)(P));
         typedef R FunctionType(P);
         Mocker() {};
         Mocker(FunctionType function, const std::string& functionName):
-                MockerBase<FunctionType>(functionName),
+                MockerBase<R(*)(P)>(functionName),
                 originFunction(function) {
-            Mocker<I(R(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
+            Mocker<I(R(*)(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
             instance_mocker = this;
             RuntimePatcher::GraftFunction(originFunction,
                                           MockerEntryPoint<IntegrateType>::EntryPoint,
-                                          MockerBase<FunctionType>::binaryBackup);
+                                          MockerBase<R(*)(P)>::binaryBackup);
         }
 
         virtual ~Mocker() {
@@ -110,9 +110,9 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
         }
 
         void RestoreToReal() {
-            RuntimePatcher::RevertGraft(originFunction, MockerBase<FunctionType>::binaryBackup);
+            RuntimePatcher::RevertGraft(originFunction, MockerBase<R(*)(P)>::binaryBackup);
 //            SimpleSingleton<I(R(P))>::getInstance() = NULL;
-            Mocker<I(R(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
+            Mocker<I(R(*)(P))>* instance_mocker = SimpleSingleton< Mocker<I(R(P))> >::getInstance();
             instance_mocker = NULL;
         }
 
@@ -175,9 +175,9 @@ private:
     typedef std::list<void(*)()> RestoreFunctions;
 
     template < typename I, typename R, typename P >
-    static MockerBase<R(P)>*
+    static MockerBase<R(*)(P)>*
             CreateMocker(R function(P), const std::string& functionName) {
-        Mocker<I(R(P))>* mocker = new Mocker<I(R(P))>(function, functionName);
+        Mocker<I(R(*)(P))>* mocker = new Mocker<I(R(*)(P))>(function, functionName);
         return mocker;
     }
 
@@ -213,9 +213,9 @@ private:
 
 public:
     template < typename I, typename R, typename P >
-    static const MockerBase<R(P)>*
+    static const MockerBase<R(*)(P)>*
             GetMocker(R function(P), const std::string& functionName) {
-        return DoGetMocker<I, MockerBase<R(P)>, R(P)>(function, functionName);
+        return DoGetMocker<I, MockerBase<R(*)(P)>, R(*)(P)>(function, functionName);
     }
 
 #define GET_MOCKER_WITH_THIR_POINTER_CHECK(constness) \
