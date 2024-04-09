@@ -216,7 +216,7 @@ private:
         return mocker; \
     }
 
-    CREATE_MOCKER_WITH_THIR_POINTER_CHECK(const)
+//    CREATE_MOCKER_WITH_THIR_POINTER_CHECK(const)
     CREATE_MOCKER_WITH_THIR_POINTER_CHECK()
 #undef CREATE_MOCKER_WITH_THIR_POINTER_CHECK
 
@@ -251,7 +251,7 @@ public:
         return DoGetMocker<I, MockerBase<R(*)(const void*, P)>, R(C::*)(P)>(function, functionName); \
     }
 
-    GET_MOCKER_WITH_THIR_POINTER_CHECK(const)
+//    GET_MOCKER_WITH_THIR_POINTER_CHECK(const)
     GET_MOCKER_WITH_THIR_POINTER_CHECK()
 #undef GET_MOCKER_WITH_THIR_POINTER_CHECK
 
