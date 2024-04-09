@@ -55,7 +55,7 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
     friend class Mocker<IntegrateType>; \
     R EntryPoint(P p) { \
         std::cout << "enter entry point 2" << std::endl; \
-        return SimpleSingleton< Mocker<IntegrateType> >::getInstance()->CppFreeMockStubFunction(this, p); \
+        return SimpleSingleton< Mocker<IntegrateType> >::getInstance()->CppFreeMockStubFunction(p); \
     } \
 }
 
@@ -67,6 +67,31 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 // This class is hack how gmock implement it.
     template < typename R, typename P >
     struct MockerBase<R(*)(P)> {
+        MockerBase() {}
+        MockerBase(const std::string& _functionName): functionName(_functionName) {}
+        virtual ~MockerBase() {}
+
+        // Use 'CppFreeMockStubFunction' as the function name for EXPECT_CALL.
+        R CppFreeMockStubFunction(P p) {
+            return "it's working";
+//            gmocker.SetOwnerAndName(this, functionName.c_str());
+//            return gmocker.Invoke(p);
+        }
+
+//        ::testing::MockSpec<R(P)>& gmock_CppFreeMockStubFunction(const ::testing::Matcher<P>& p) {
+//            gmocker.RegisterOwner(this);
+//            return gmocker.With(p);
+//        }
+
+        virtual void RestoreToReal() = 0;
+
+//        mutable ::testing::FunctionMocker<R(P)> gmocker;
+        std::vector<char> binaryBackup; // Backup the mockee's binary code changed in RuntimePatcher.
+        const std::string functionName;
+    };
+
+    template < typename R, typename P >
+    struct MockerBase<R(*)(const void*, P)> {
         MockerBase() {}
         MockerBase(const std::string& _functionName): functionName(_functionName) {}
         virtual ~MockerBase() {}
@@ -121,23 +146,24 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 
 #define MOCKER_WITH_THIS_POINTER_CHECK(constness) \
 template < typename I, typename C, typename R, typename P> \
-struct Mocker<I(R(C::*)(const void*, P) constness)> : MockerBase<R(const void*, P)> { \
+struct Mocker<I(R(C::*)(const void*, P) constness)> : MockerBase<R(*)(const void*, P)> { \
     typedef I IntegrateType(R(C::*)(const void*, P) constness); \
     typedef I EntryPointType(R(C::*)(P) constness); \
     typedef R (C::*FunctionType)(P) constness; \
     typedef R StubFunctionType(const void*, P); \
+    Mocker() {}; \
     Mocker(FunctionType function, const std::string& functionName): \
-        MockerBase<StubFunctionType>(functionName), \
+        MockerBase<R(*)(const void*, P)>(functionName), \
         originFunction(function) { \
         RuntimePatcher::GraftFunction(originFunction, \
                 &MockerEntryPoint<EntryPointType>::EntryPoint, \
-                MockerBase<StubFunctionType>::binaryBackup); \
+                MockerBase<R(*)(const void*, P)>::binaryBackup); \
     } \
     virtual ~Mocker() { \
         RestoreToReal(); \
     } \
     virtual void RestoreToReal() { \
-        RuntimePatcher::RevertGraft(originFunction, MockerBase<StubFunctionType>::binaryBackup); \
+        RuntimePatcher::RevertGraft(originFunction, MockerBase<R(*)(const void*, P)>::binaryBackup); \
         Mocker<I(R(C::*))>* instance_mocker = SimpleSingleton< Mocker<I(R(C::*))> >::getInstance(); \
         instance_mocker = NULL; \
     } \
@@ -183,7 +209,7 @@ private:
 
 #define CREATE_MOCKER_WITH_THIR_POINTER_CHECK(constness) \
     template < typename I, typename C, typename R, typename P > \
-    static MockerBase<R(const void*, P)>* \
+    static MockerBase<R(*)(const void*, P)>* \
             CreateMocker(R (C::*function)(P) constness, const std::string& functionName) { \
         typedef I IntegrateType(R(C::*)(const void*, P) constness);                        \
         Mocker<IntegrateType>* mocker = new Mocker<IntegrateType>(function, functionName); \
@@ -199,7 +225,7 @@ private:
             DoGetMocker(F function, const std::string& functionName) {
         typedef MockerCache<M> MockerCacheType;
         typedef std::map<const void*, M*> HashMap;
-        const void* address = (const void*)(function);
+        const void* address = (const void*)((std::size_t&)function);
         typename HashMap::iterator got = MockerCacheType::getInstance()->find(address);
         if (got != MockerCacheType::getInstance()->end()) {
             return got->second;
@@ -220,9 +246,9 @@ public:
 
 #define GET_MOCKER_WITH_THIR_POINTER_CHECK(constness) \
     template < typename I, typename C, typename R, typename P > \
-    static MockerBase<R(const void*, P)>* \
+    static const MockerBase<R(*)(const void*, P)>* \
             GetMocker(R (C::*function)(P) constness, const std::string& functionName) { \
-        return DoGetMocker<I, MockerBase<R(const void*, P)>, R(const void*, P)>(function, functionName); \
+        return DoGetMocker<I, MockerBase<R(*)(const void*, P)>, R(C::*)(P)>(function, functionName); \
     }
 
     GET_MOCKER_WITH_THIR_POINTER_CHECK(const)
