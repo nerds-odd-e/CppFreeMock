@@ -216,7 +216,9 @@ private:
         return mocker; \
     }
 
-//    CREATE_MOCKER_WITH_THIR_POINTER_CHECK(const)
+#if __cplusplus >= 201103L
+    CREATE_MOCKER_WITH_THIR_POINTER_CHECK(const)
+#endif
     CREATE_MOCKER_WITH_THIR_POINTER_CHECK()
 #undef CREATE_MOCKER_WITH_THIR_POINTER_CHECK
 
@@ -248,10 +250,12 @@ public:
     template < typename I, typename C, typename R, typename P > \
     static const MockerBase<R(*)(const void*, P)>* \
             GetMocker(R (C::*function)(P) constness, const std::string& functionName) { \
-        return DoGetMocker<I, MockerBase<R(*)(const void*, P)>, R(C::*)(P)>(function, functionName); \
+        return DoGetMocker<I, MockerBase<R(*)(const void*, P)>, R(C::*)(P) constness>(function, functionName); \
     }
 
-//    GET_MOCKER_WITH_THIR_POINTER_CHECK(const)
+#if __cplusplus >= 201103L
+    GET_MOCKER_WITH_THIR_POINTER_CHECK(const)
+#endif
     GET_MOCKER_WITH_THIR_POINTER_CHECK()
 #undef GET_MOCKER_WITH_THIR_POINTER_CHECK
 

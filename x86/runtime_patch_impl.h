@@ -24,8 +24,11 @@ namespace RuntimePatcherImpl {
     }
 
     static bool IsDistanceOverflow(const std::size_t distance) {
+#ifdef INT_MAX
         return distance > INT_MAX && distance < ((long long)INT_MIN);
-//        return distance > INT32_MAX && distance < ((long long)INT32_MIN);
+#else
+        return distance > INT32_MAX && distance < ((long long)INT32_MIN);
+#endif
     }
 
     static std::size_t CalculateDistance(const void* const address, const void* const destination) {
