@@ -19,6 +19,7 @@
 #include <vector>
 // I don't include gmock and gtest file here, because maybe you have you own include patch.
 #include <iostream>
+#include <cstring>
 
 namespace CppFreeMock {
 
@@ -73,7 +74,10 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 
         // Use 'CppFreeMockStubFunction' as the function name for EXPECT_CALL.
         R CppFreeMockStubFunction(P p) {
-            return "it's working";
+            std::string str = "it's working";
+            char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+            std::strcpy(cstr, str.c_str());
+            return cstr;
 //            gmocker.SetOwnerAndName(this, functionName.c_str());
 //            return gmocker.Invoke(p);
         }
@@ -98,7 +102,10 @@ class MockerEntryPoint<I(R(C::*)(P) constness)> { \
 
         // Use 'CppFreeMockStubFunction' as the function name for EXPECT_CALL.
         R CppFreeMockStubFunction(P p) {
-            return "it's working";
+            std::string str = "it's working";
+            char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+            std::strcpy(cstr, str.c_str());
+            return cstr;
 //            gmocker.SetOwnerAndName(this, functionName.c_str());
 //            return gmocker.Invoke(p);
         }

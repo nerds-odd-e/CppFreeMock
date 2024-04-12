@@ -4,27 +4,43 @@
 #include "cpp_free_mock.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 
-std::string func(int) {
-    return "very long long ......................   ................... Non mocked.";
+char * func(int) {
+    std::string str = "Non mocked";
+    char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+    std::strcpy(cstr, str.c_str());
+    return cstr;
 }
 
 struct TestMockStruct {
-    std::string func0Parameter(int) {
-        return "Non mocked.";
+    char * func0Parameter(int) {
+        std::string str = "Non mocked";
+        char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+        std::strcpy(cstr, str.c_str());
+        return cstr;
     }
-    std::string func1Parameter(int) const {
-        return "Non mocked.";
+    char * func1Parameter(int) const {
+        std::string str = "Non mocked";
+        char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+        std::strcpy(cstr, str.c_str());
+        return cstr;
     }
-    static std::string testReferenceStubP1P2(int) {
-        return "Non mocked.";
+    static char * testReferenceStubP1P2(int) {
+        std::string str = "Non mocked";
+        char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+        std::strcpy(cstr, str.c_str());
+        return cstr;
     }
 
 };
 
 namespace TestNamespace {
-    std::string func0Parameter(int) {
-        return "Non mocked.";
+    char * func0Parameter(int) {
+        std::string str = "Non mocked";
+        char* cstr = new char[str.length() + 1];  // +1 for the null terminator
+        std::strcpy(cstr, str.c_str());
+        return cstr;
     }
 }
 
@@ -43,6 +59,9 @@ int main() {
 
     MOCKER(TestMockStruct::testReferenceStubP1P2);
     std::cout << "class static method - TestMockStruct::testReferenceStubP1P2 return: " << TestMockStruct::testReferenceStubP1P2(1) << std::endl;
+
+    MOCKER(strerror);
+    std::cout << "lib method - strerror return: " << strerror(1) << std::endl;
     return 0;
 }
 
